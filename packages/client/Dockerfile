@@ -4,7 +4,7 @@ WORKDIR /app
 ARG VITE_API_BASE
 ENV VITE_API_BASE=${VITE_API_BASE}
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci || npm install
 COPY . .
 RUN npm run build
 
