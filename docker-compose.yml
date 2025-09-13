@@ -1,41 +1,33 @@
-version: '3.9'
 services:
   mongo:
     image: mongo:6
-    restart: always
+    container_name: glads-mongo
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
+      - glads-mongo-data:/data/db
+
   server:
     build:
       context: ./packages/server
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - PORT=8080
-      - MONGO_URI=mongodb://mongo:27017/analyticsdb
-      - JWT_SECRET=devsecret_change_me
-      - ACCESS_TOKEN_TTL=15m
-      - REFRESH_TOKEN_TTL=7d
-      - CLIENT_URL=http://localhost:5173
-    ports:
-      - "8080:8080"
+    container_name: glads-server
+    env_file:
+      - ./packages/server/.env
     depends_on:
       - mongo
+    ports:
+      - "8080:8080"
+
   client:
     build:
       context: ./packages/client
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE=http://localhost:8080/api
-    environment:
-      - VITE_API_BASE=http://localhost:8080/api
-    ports:
-      - "5173:80"
+    container_name: glads-client
+    env_file:
+      - ./packages/client/.env
     depends_on:
       - server
-volumes:
-  mongo_data:
-    driver: local
+    ports:
+      - "5173:5173"
 
+volumes:
+  glads-mongo-data:
