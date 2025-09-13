@@ -1,0 +1,14 @@
+{
+  "name": "global-learning-analytics-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "seed": "npm run seed -w packages/server",
+    "dev:server": "npm run dev -w packages/server",
+    "dev:client": "npm run dev -w packages/client",
+    "test:server": "npm test -w packages/server",
+    "test:client": "npm test -w packages/client"
+  }
+}
+

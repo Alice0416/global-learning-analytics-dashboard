@@ -1,0 +1,307 @@
+openapi: 3.0.3
+info:
+  title: Global Learning Analytics Dashboard API
+  version: 1.0.0
+  description: 学习数据采集、分析与推荐 API 文档
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /auth/register:
+    post:
+      summary: 用户注册
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email: { type: string, format: email, example: user@example.com }
+                password: { type: string, minLength: 6, example: secret123 }
+                name: { type: string, example: Alice }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+  /auth/login:
+    post:
+      summary: 用户登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: user@example.com }
+                password: { type: string, example: secret123 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken: { type: string }
+                          refreshToken: { type: string }
+                          user: { $ref: '#/components/schemas/User' }
+  /auth/refresh:
+    post:
+      summary: 刷新访问令牌
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken: { type: string }
+  /users/me:
+    get:
+      summary: 获取当前用户信息
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+  /courses:
+    get:
+      summary: 课程列表
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Course' }
+  /courses/{id}:
+    get:
+      summary: 课程详情
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+  /analytics/ingest:
+    post:
+      summary: 批量导入事件日志
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+  /analytics/kpis:
+    get:
+      summary: 获取 KPI 指标
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Kpis'
+  /analytics/trends:
+    get:
+      summary: 指标趋势
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: metric
+          schema: { type: string, enum: [completion_rate, watch_time] }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: bucket
+          schema: { type: string, enum: [day, week, month] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/TrendResponse' }
+  /analytics/popular:
+    get:
+      summary: 热门课程
+      parameters:
+        - in: query
+          name: top
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            course: { $ref: '#/components/schemas/Course' }
+                            interactions: { type: integer }
+                            completes: { type: integer }
+  /recommend/me:
+    get:
+      summary: 个性化推荐
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: top
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Ok'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            course: { $ref: '#/components/schemas/Course' }
+                            reason: { type: string, example: 相似用户 60% 完成该课 }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Ok:
+      type: object
+      properties:
+        ok: { type: boolean, example: true }
+        data: { nullable: true }
+        error:
+          nullable: true
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [user, admin] }
+        createdAt: { type: string, format: date-time }
+    Course:
+      type: object
+      properties:
+        _id: { type: string }
+        code: { type: string }
+        title: { type: string }
+        tags: { type: array, items: { type: string } }
+        difficulty: { type: string, enum: [beginner, intermediate, advanced] }
+        createdAt: { type: string, format: date-time }
+    EventInput:
+      type: object
+      required: [userId, courseId, type, ts]
+      properties:
+        userId: { type: string }
+        courseId: { type: string }
+        type: { type: string, enum: [view, quiz, complete] }
+        durationSec: { type: number }
+        score: { type: number, nullable: true }
+        ts: { type: string, format: date-time }
+    Kpis:
+      type: object
+      properties:
+        activeUsers: { type: integer, example: 120 }
+        completionRate: { type: number, example: 0.42 }
+        avgWatchTime: { type: number, example: 120.5 }
+        retention7d: { type: number, example: 0.35 }
+        retention30d: { type: number, example: 0.28 }
+    TrendResponse:
+      type: object
+      properties:
+        metric: { type: string }
+        bucket: { type: string }
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              bucket: { type: string, example: 2024-01-01 }
+              value: { type: number, example: 0.52 }
+
