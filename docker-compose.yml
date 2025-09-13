@@ -21,6 +21,8 @@ services:
   client:
     build:
       context: ./packages/client
+      args:
+        - VITE_API_BASE_URL=http://localhost:8080/api   # build-time injection
     container_name: glads-client
     env_file:
       - ./packages/client/.env
