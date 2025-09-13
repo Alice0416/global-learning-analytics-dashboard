@@ -7,7 +7,7 @@ const { errorHandler } = require('./middleware/error');
 const { env } = require('./config/env');
 
 const app = express();
-app.use(cors({ origin: env.CLIENT_URL || true, credentials: true }));
+app.use(cors({ origin: env.CORS_ORIGIN || env.CLIENT_URL || true, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
