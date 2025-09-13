@@ -55,7 +55,7 @@ Here’s the 60‑second path to running locally.
 
 ```bash
 # 1) Clone
-git clone https://github.com/<YOUR_ORG>/global-learning-analytics-dashboard.git
+git clone https://github.com/Alice0416/global-learning-analytics-dashboard.git
 cd global-learning-analytics-dashboard
 
 # 2) Configure env
@@ -75,7 +75,6 @@ npm run dev:server  # http://localhost:8080
 npm run dev:client  # http://localhost:5173
 ```
 
-> Note — Replace `<YOUR_ORG>` above with your GitHub org/user. If you customize
 > API base URLs, set `VITE_API_BASE` in `.env` before `docker-compose up`.
 
 First login (seeded):
